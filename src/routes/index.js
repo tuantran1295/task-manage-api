@@ -17,4 +17,6 @@ router.post('/tasks', auth(['EMPLOYER']), TaskCtrl.createTask);
 router.get('/tasks', auth(['EMPLOYER']), TaskCtrl.getAllTasks);
 router.get('/employees/summary', auth(['EMPLOYER']), EmpCtrl.getEmployeeSummary);
 
+router.get('/users/me', auth([]), AuthCtrl.me);
+
 module.exports = router;

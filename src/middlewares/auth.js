@@ -8,7 +8,7 @@ module.exports = (roles = []) => (req, res, next) => {
     }
 
     try {
-        const payload = jwt.verify(auth.split('')[1], JWT_SECRET);
+        const payload = jwt.verify(auth.split(' ')[1], JWT_SECRET);
         req.user = payload;
         if (roles.length && !roles.includes(payload.role)) {
             return res.status(403).json({ message: 'Forbidden' });

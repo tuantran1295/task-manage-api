@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Tasks</title>
+    <style>
+        body { font-family: Arial; margin: 2em; }
+        table { border-collapse: collapse; min-width: 900px;}
+        th, td { padding: 8px 12px; border: 1px solid #ccc;}
+        th { background: #efefef;}
+        select, button { padding:4px 8px;}
+        nav a { margin:0 1em 0 0; }
+    </style>
+</head>
+<body>
+<div>
+    <span id="user-info"></span>
+    <nav style="float:right;">
+        <a href="/tasks">All Tasks</a>
+        <a href="/tasks-create">Create Task</a>
+        <a href="/employee-summary">Employee Summary</a>
+        <a href="/login" onclick="logout();return false;">Logout</a>
+    </nav>
+</div>
+<h2>All Tasks</h2>
+<form id="filter-form">
+    Assignee:
+    <select name="assigneeId" id="assigneeIdFilter"></select>
+    Status:
+    <select name="status">
+        <option value="">All</option>
+        <option value="PENDING">Pending</option>
+        <option value="IN_PROGRESS">In Progress</option>
+        <option value="COMPLETED">Completed</option>
+    </select>
+    Sort by:
+    <select name="sortBy">
+        <option value="createdAt">Created At</option>
+        <option value="dueDate">Due Date</option>
+        <option value="status">Status</option>
+    </select>
+    <select name="order">
+        <option value="desc">Descending</option>
+        <option value="asc">Ascending</option>
+    </select>
+    <button type="submit">Filter</button>
+</form>
+<table id="tasks-table">
+    <thead><tr>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Due Date</th>
+        <th>Assignee</th>
+    </tr></thead>
+    <tbody></tbody>
+</table>
+<script>
+    function logout() { localStorage.removeItem('token'); window.location = '/login'; }
+
+    async function getTokenUser() {
+        const token = localStorage.getItem('token');
+        if (!token) return window.location = '/login';
+        const res = await fetch('/api/users/me', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) return window.location = '/login';
+        return res.json();
+    }
+    async function fetchEmployees() {
+        // Employers get summary, but we use only id/name
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/employees/summary', { headers: { 'Authorization': 'Bearer ' + token }});
+        if (!res.ok) return [];
+        return res.json();
+    }
+    async function fetchTasks(params) {
+        const token = localStorage.getItem('token');
+        const qs = new URLSearchParams(params).toString();
+        const res = await fetch('/api/tasks?' + qs, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        return res.json();
+    }
+    async function load() {
+        // Fill assignee filter
+        let urlParams = new URLSearchParams(window.location.search);
+        let params = {
+            assigneeId: urlParams.get('assigneeId') || "",
+            status: urlParams.get('status') || "",
+            sortBy: urlParams.get('sortBy') || "createdAt",
+            order: urlParams.get('order') || "desc"
+        };
+
+        const user = await getTokenUser();
+        document.getElementById('user-info').textContent = user.name + " (" + user.email + ") - Employer";
+        const employees = await fetchEmployees();
+        const assSel = document.getElementById('assigneeIdFilter');
+        assSel.innerHTML = `<option value="">All</option>`;
+        employees.forEach(emp => {
+            assSel.innerHTML += `<option value="${emp.id}" ${params.assigneeId == emp.id ? "selected":""}>${emp.name}</option>`;
+        });
+
+        document.getElementById('filter-form').onsubmit = function(e) {
+            e.preventDefault();
+            const par = {};
+            Array.from(this.elements).forEach(el => { if (el.name && el.value) par[el.name]=el.value; });
+            const qs = new URLSearchParams(par).toString();
+            window.location = "/tasks" + (qs.length ? ("?" + qs):"");
+        };
+
+        const tasks = await fetchTasks(params);
+        const tbody = document.querySelector('#tasks-table tbody');
+        tbody.innerHTML = '';
+        tasks.forEach(task => {
+            tbody.innerHTML += `<tr>
+      <td>${task.title}</td>
+      <td>${task.description}</td>
+      <td>${task.status}</td>
+      <td>${new Date(task.dueDate).toLocaleString()}</td>
+      <td>${employees.find(a=>a.id===task.assigneeId)?.name || "?"}</td>
+    </tr>`;
+        });
+    }
+    load();
+</script>
+</body>
+</html>

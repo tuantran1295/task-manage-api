@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Tasks</title>
+    <style>
+        body { font-family: Arial; margin: 2em; }
+        table { border-collapse: collapse; min-width: 650px; margin-top:1em;}
+        th, td { padding: 8px 12px; border: 1px solid #ccc;}
+        th { background: #efefef;}
+        select, button { padding:4px 8px;}
+    </style>
+</head>
+<body>
+<div>
+    <span id="user-info"></span>
+    <a href="/login" onclick="logout();return false;" style="float:right;">Logout</a>
+</div>
+<h2>Your Assigned Tasks</h2>
+<table id="tasks-table">
+    <thead><tr>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Due Date</th>
+        <th>Update Status</th>
+    </tr></thead>
+    <tbody></tbody>
+</table>
+<script>
+    function logout() { localStorage.removeItem('token'); window.location = '/login'; }
+
+    async function getTokenUser() {
+        const token = localStorage.getItem('token');
+        if (!token) return window.location = '/login';
+        const res = await fetch('/api/users/me', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) return window.location = '/login';
+        return res.json();
+    }
+    async function fetchTasks() {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/tasks/my', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        return res.json();
+    }
+    async function load() {
+        const user = await getTokenUser();
+        document.getElementById('user-info').textContent = user.name + " (" + user.email + ") - Employee";
+        const tasks = await fetchTasks();
+        const tbody = document.querySelector('#tasks-table tbody');
+        tbody.innerHTML = '';
+        for (const task of tasks) {
+            let select = `<select data-taskid="${task.id}">
+            <option value="IN_PROGRESS" ${task.status === 'IN_PROGRESS' ? 'selected' : ''}>In Progress</option>
+            <option value="COMPLETED" ${task.status === 'COMPLETED' ? 'selected' : ''}>Completed</option>
+          </select>`;
+            if (task.status === 'COMPLETED') select = task.status;
+            tbody.innerHTML += `<tr>
+          <td>${task.title}</td>
+          <td>${task.description}</td>
+          <td>${task.status}</td>
+          <td>${new Date(task.dueDate).toLocaleString()}</td>
+          <td>${select}</td>
+        </tr>`;
+        }
+        // Status update
+        tbody.querySelectorAll('select').forEach(sel => {
+            sel.onchange = async function() {
+                const id = sel.getAttribute('data-taskid');
+                const val = sel.value;
+                await fetch('/api/tasks/' + id, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: val })
+                });
+                load();
+            };
+        });
+    }
+    load();
+</script>
+</body>
+</html>

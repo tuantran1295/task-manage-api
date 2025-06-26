@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Summary</title>
+    <style>
+        body { font-family: Arial; margin: 2em; }
+        table { border-collapse: collapse; min-width: 700px;}
+        th, td { padding: 8px 12px; border: 1px solid #ccc;}
+        th { background: #efefef;}
+    </style>
+</head>
+<body>
+<div>
+    <span id="user-info"></span>
+    <nav style="float:right;">
+        <a href="/tasks">All Tasks</a>
+        <a href="/tasks-create">Create Task</a>
+        <a href="/employee-summary">Employee Summary</a>
+        <a href="/login" onclick="logout();return false;">Logout</a>
+    </nav>
+</div>
+<h2>Employee Task Summary</h2>
+<table id="summary-table">
+    <thead><tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Total Tasks</th>
+        <th>Completed Tasks</th>
+    </tr></thead>
+    <tbody></tbody>
+</table>
+<script>
+    function logout() { localStorage.removeItem('token'); window.location = '/login'; }
+    async function getTokenUser() {
+        const token = localStorage.getItem('token');
+        if (!token) return window.location = '/login';
+        const res = await fetch('/api/users/me', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) return window.location = '/login';
+        return res.json();
+    }
+    async function fetchSummary() {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/employees/summary', { headers: { 'Authorization': 'Bearer ' + token }});
+        if (!res.ok) return [];
+        return res.json();
+    }
+    async function load() {
+        const user = await getTokenUser();
+        document.getElementById('user-info').textContent = user.name + " (" + user.email + ") - Employer";
+        const summary = await fetchSummary();
+        const tbody = document.querySelector('#summary-table tbody');
+        tbody.innerHTML = summary.map(e => `<tr>
+    <td>${e.name}</td>
+    <td>${e.email}</td>
+    <td>${e.totalTasks}</td>
+    <td>${e.completedTasks}</td>
+  </tr>`).join("");
+    }
+    load();
+</script>
+</body>
+</html>

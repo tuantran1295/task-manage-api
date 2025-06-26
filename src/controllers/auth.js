@@ -40,3 +40,11 @@ exports.register = async (req, res) => {
     });
     res.status(201).json({ id: user.id, name: user.name, role: user.role });
 }
+
+exports.me = async (req, res) => {
+    res.json({
+        name: req.user.name,
+        email: req.user.email,
+        role: req.user.role,
+    });
+}

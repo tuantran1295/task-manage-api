@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Task</title>
+    <style>
+        body { font-family: Arial; margin: 2em; }
+        label { display:block;margin-top:1em;}
+        input, textarea, select { width:100%; padding:8px;}
+        button { margin-top:1em;}
+        .error, .success { color: red; margin-top:0.5em;}
+        .success { color: green; }
+    </style>
+</head>
+<body>
+<h2>Create and Assign Task</h2>
+<form id="create-task-form">
+    <label>Title: <input name="title" required /></label>
+    <label>Description: <textarea name="description" required></textarea></label>
+    <label>Due Date: <input name="dueDate" type="datetime-local" required /></label>
+    <label>Employee:
+        <select name="assigneeId" id="employee-select"></select>
+    </label>
+    <button type="submit">Create Task</button>
+</form>
+<div class="error" id="error"></div>
+<div class="success" id="success"></div>
+<nav>
+    <a href="/tasks">All Tasks</a>
+    <a href="/employee-summary">Employee Summary</a>
+    <a href="/login" onclick="logout();return false;">Logout</a>
+</nav>
+<script>
+    function logout() { localStorage.removeItem('token'); window.location = '/login'; }
+    async function getTokenUser() {
+        const token = localStorage.getItem('token');
+        if (!token) return window.location = '/login';
+        const res = await fetch('/api/users/me', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) return window.location = '/login';
+        return res.json();
+    }
+    async function fetchEmployees() {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/employees/summary', { headers: { 'Authorization': 'Bearer ' + token }});
+        if (!res.ok) return [];
+        return res.json();
+    }
+    async function load() {
+        const employees = await fetchEmployees();
+        const sel = document.getElementById('employee-select');
+        sel.innerHTML = employees.map(emp => `<option value="${emp.id}">${emp.name} (${emp.email})</option>`).join("");
+    }
+    document.getElementById('create-task-form').onsubmit = async function(e) {
+        e.preventDefault();
+        document.getElementById('error').textContent = '';
+        document.getElementById('success').textContent = '';
+        const form = e.target;
+        const body = {
+            title: form.title.value,
+            description: form.description.value,
+            dueDate: form.dueDate.value,
+            assigneeId: form.assigneeId.value
+        };
+        const res = await fetch('/api/tasks', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+        if (res.ok) {
+            document.getElementById('success').textContent = "Task created!";
+            form.reset();
+        } else {
+            const err = await res.json();
+            document.getElementById('error').textContent = err.message || "Error creating task.";
+        }
+    };
+    load();
+</script>
+</body>
+</html>

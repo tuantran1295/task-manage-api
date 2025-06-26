@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <style>
+        body { font-family: Arial; margin: 2em; }
+        form { max-width: 350px; margin:auto; }
+        input { width:100%; padding:8px; margin-top:0.3em;}
+        button { margin-top:1em;}
+        .error { color: red; }
+    </style>
+</head>
+<body>
+<h2>Login</h2>
+<form id="login-form">
+    <label>Email: <input name="email" type="email" required /></label>
+    <label>Password: <input name="password" type="password" required /></label>
+    <button type="submit">Login</button>
+</form>
+<div class="error" id="error"></div>
+<p>Don't have an account? <a href="/register">Register</a></p>
+<script>
+    document.getElementById('login-form').onsubmit = async function(e) {
+        e.preventDefault();
+        document.getElementById('error').textContent = "";
+        const form = e.target;
+        const body = { email: form.email.value, password: form.password.value };
+        const res = await fetch('/api/auth/login', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (res.ok) {
+            const data = await res.json();
+            localStorage.setItem('token', data.token);
+            // Fetch user info
+            const userRes = await fetch('/api/users/me', {
+                headers: { 'Authorization': 'Bearer ' + data.token }
+            });
+            const user = await userRes.json();
+            if (user.role === 'EMPLOYEE') window.location = '/employee-tasks';
+            else window.location = '/tasks';
+        } else {
+            const err = await res.json();
+            document.getElementById('error').textContent = err.message || 'Login failed';
+        }
+    };
+</script>
+</body>
+</html>
