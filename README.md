@@ -180,11 +180,3 @@ Headers: `Authorization: Bearer <token>`
 | `npm run prisma:studio` | Open Prisma Studio database GUI              |
 
 ---
-
-## License
-
-ISC
-
----
-
-Let me know if you need expanded endpoint docs, example Postman collection exports, or more advanced README formatting!

@@ -6,7 +6,7 @@ const EmpCtrl = require('../controllers/employees');
 const router = express.Router();
 
 router.post('/auth/login', AuthCtrl.login);
-router.post('/auth/register', auth(['EMPLOYER']), AuthCtrl.register);
+router.post('/auth/register', AuthCtrl.register);
 
 // Employee endpoints
 router.get('/tasks/my', auth(['EMPLOYEE']), TaskCtrl.getMyTasks);

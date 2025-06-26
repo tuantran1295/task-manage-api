@@ -13,7 +13,7 @@ exports.login = async (req, res) => {
         return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    const token = jawt.sign({
+    const token = jwt.sign({
         id: user.id,
         role: user.role,
         name: user.name,
