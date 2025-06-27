@@ -40,5 +40,5 @@ const PORT = process.env.PORT || 3000;
 const HOST = os.hostname();
 app.listen(PORT, () => {
     console.log('Server listening on port', PORT);
-    console.log(`Server is running at http://${HOST}:${PORT}`);
+    // console.log(`Server is running at http://${HOST}:${PORT}`);
 });
