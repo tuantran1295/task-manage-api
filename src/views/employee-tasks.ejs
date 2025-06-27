@@ -53,17 +53,17 @@
         tbody.innerHTML = '';
         for (const task of tasks) {
             let select = `<select data-taskid="${task.id}">
-            <option value="IN_PROGRESS" ${task.status === 'IN_PROGRESS' ? 'selected' : ''}>In Progress</option>
-            <option value="COMPLETED" ${task.status === 'COMPLETED' ? 'selected' : ''}>Completed</option>
-          </select>`;
-            if (task.status === 'COMPLETED') select = task.status;
+                <option value="PENDING" ${task.status === 'PENDING' ? 'selected' : ''}>Pending</option>
+                <option value="IN_PROGRESS" ${task.status === 'IN_PROGRESS' ? 'selected' : ''}>In Progress</option>
+                <option value="COMPLETED" ${task.status === 'COMPLETED' ? 'selected' : ''}>Completed</option>
+            </select>`;
             tbody.innerHTML += `<tr>
-          <td>${task.title}</td>
-          <td>${task.description}</td>
-          <td>${task.status}</td>
-          <td>${new Date(task.dueDate).toLocaleString()}</td>
-          <td>${select}</td>
-        </tr>`;
+                <td>${task.title}</td>
+                <td>${task.description}</td>
+                <td>${task.status}</td>
+                <td>${new Date(task.dueDate).toLocaleString()}</td>
+                <td>${select}</td>
+            </tr>`;
         }
         // Status update
         tbody.querySelectorAll('select').forEach(sel => {
