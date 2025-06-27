@@ -4,33 +4,40 @@
     <title>Create Task</title>
     <style>
         body { font-family: Arial; margin: 2em; }
-        label { display:block;margin-top:1em;}
-        input, textarea, select { width:100%; padding:8px;}
-        button { margin-top:1em;}
-        .error, .success { color: red; margin-top:0.5em;}
+        form { max-width: 500px; }
+        label { display: block; margin-top: 1em; }
+        input, textarea, select { width: 100%; padding: 8px; margin-top: 0.3em; }
+        .error { color: red; }
         .success { color: green; }
+        nav a { margin:0 1em 0 0; }
     </style>
 </head>
 <body>
-<h2>Create and Assign Task</h2>
-<form id="create-task-form">
-    <label>Title: <input name="title" required /></label>
+<div>
+    <nav style="float:right;">
+        <a href="/tasks">All Tasks</a>
+        <a href="/tasks-create">Create Task</a>
+        <a href="/employee-summary">Employee Summary</a>
+        <a href="/login" onclick="logout();return false;">Logout</a>
+    </nav>
+</div>
+<h2>Create Task</h2>
+<form id="task-form">
+    <label>Title: <input type="text" name="title" required /></label>
     <label>Description: <textarea name="description" required></textarea></label>
-    <label>Due Date: <input name="dueDate" type="datetime-local" required /></label>
-    <label>Employee:
-        <select name="assigneeId" id="employee-select"></select>
+    <label>Due Date: <input type="datetime-local" name="dueDate" required /></label>
+    <label>Assignee:
+        <select name="assigneeId" id="assignee-select" required>
+            <option value="">Select Employee...</option>
+        </select>
     </label>
     <button type="submit">Create Task</button>
 </form>
 <div class="error" id="error"></div>
 <div class="success" id="success"></div>
-<nav>
-    <a href="/tasks">All Tasks</a>
-    <a href="/employee-summary">Employee Summary</a>
-    <a href="/login" onclick="logout();return false;">Logout</a>
-</nav>
 <script>
     function logout() { localStorage.removeItem('token'); window.location = '/login'; }
+
     async function getTokenUser() {
         const token = localStorage.getItem('token');
         if (!token) return window.location = '/login';
@@ -38,28 +45,69 @@
         if (!res.ok) return window.location = '/login';
         return res.json();
     }
+
     async function fetchEmployees() {
         const token = localStorage.getItem('token');
         const res = await fetch('/api/employees/summary', { headers: { 'Authorization': 'Bearer ' + token }});
         if (!res.ok) return [];
         return res.json();
     }
+
     async function load() {
+        const user = await getTokenUser();
+        if (user.role !== 'EMPLOYER') window.location = '/employee-tasks';
         const employees = await fetchEmployees();
-        const sel = document.getElementById('employee-select');
-        sel.innerHTML = employees.map(emp => `<option value="${emp.id}">${emp.name} (${emp.email})</option>`).join("");
+        const select = document.getElementById('assignee-select');
+        employees.forEach(emp => {
+            const opt = document.createElement('option');
+            opt.value = emp.id;
+            opt.innerHTML = `${emp.name} (${emp.email})`;
+            select.appendChild(opt);
+        });
     }
-    document.getElementById('create-task-form').onsubmit = async function(e) {
+
+    document.getElementById('task-form').onsubmit = async function(e) {
         e.preventDefault();
-        document.getElementById('error').textContent = '';
-        document.getElementById('success').textContent = '';
+        document.getElementById('error').textContent = "";
+        document.getElementById('success').textContent = "";
+
         const form = e.target;
+        const title = form.title.value.trim();
+        const description = form.description.value.trim();
+        const dueDateString = form.dueDate.value;
+        const assigneeId = form.assigneeId.value;
+
+        // Frontend validation
+        if (!title) {
+            document.getElementById('error').textContent = "Title is required.";
+            return;
+        }
+        if (!description) {
+            document.getElementById('error').textContent = "Description is required.";
+            return;
+        }
+        if (!dueDateString) {
+            document.getElementById('error').textContent = "Due date is required.";
+            return;
+        }
+        // Validate date
+        const dueDate = new Date(dueDateString);
+        if (isNaN(dueDate.getTime())) {
+            document.getElementById('error').textContent = "Invalid due date format.";
+            return;
+        }
+        if (!assigneeId) {
+            document.getElementById('error').textContent = "Please select an assignee.";
+            return;
+        }
+
         const body = {
-            title: form.title.value,
-            description: form.description.value,
-            dueDate: form.dueDate.value,
-            assigneeId: form.assigneeId.value
+            title,
+            description,
+            dueDate: dueDate.toISOString(), // Always send in ISO format
+            assigneeId
         };
+
         const res = await fetch('/api/tasks', {
             method: 'POST',
             headers: {
@@ -69,13 +117,14 @@
             body: JSON.stringify(body)
         });
         if (res.ok) {
-            document.getElementById('success').textContent = "Task created!";
-            form.reset();
+            document.getElementById('success').textContent = 'Task created! Redirecting...';
+            setTimeout(() => window.location = '/tasks', 800);
         } else {
             const err = await res.json();
-            document.getElementById('error').textContent = err.message || "Error creating task.";
+            document.getElementById('error').textContent = err.message || 'Failed to create task';
         }
     };
+
     load();
 </script>
 </body>

@@ -29,12 +29,35 @@ exports.updateTaskStatus = async (req, res) => {
 exports.createTask = async (req, res) => {
     // employer only
     const {title, description, dueDate, assigneeId} = req.body;
+
+    // Validate required fields
+    if (!title || typeof title !== 'string' || !title.trim()) {
+        return res.status(400).json({message: 'Title is required.'});
+    }
+    if (!description || typeof description !== 'string' || !description.trim()) {
+        return res.status(400).json({message: 'Description is required.'});
+    }
+    if (!dueDate) {
+        return res.status(400).json({message: 'Due date is required.'});
+    }
+    // Validate date
+    const dueDateObj = new Date(dueDate);
+    if (!(dueDateObj instanceof Date) || isNaN(dueDateObj.getTime())) {
+        return res.status(400).json({message: 'Due date is invalid.'});
+    }
+    if (!assigneeId || isNaN(parseInt(assigneeId))) {
+        return res.status(400).json({message: 'Assignee is required.'});
+    }
+
     const user = await prisma.user.findUnique({where: {id: parseInt(assigneeId)}});
     if (!user || user.role !== 'EMPLOYEE')
         return res.status(400).json({message: 'Assignee must be employee'});
+
     const task = await prisma.task.create({
         data: {
-            title, description, dueDate: new Date(dueDate),
+            title: title.trim(),
+            description: description.trim(),
+            dueDate: dueDateObj,
             assigneeId: parseInt(assigneeId)
         }
     });
