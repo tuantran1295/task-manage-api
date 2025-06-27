@@ -320,4 +320,40 @@ curl -H "Authorization: Bearer <token>" \
 | `npm run prisma:seed`     | Seed example data to database                |
 | `npm run prisma:studio`   | Open Prisma Studio database GUI              |
 
----
+## Running the Project with Docker
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/) are installed.
+
+1. **Build and Start Docker Containers**
+
+   ```bash
+   docker-compose up --build
+   ```
+
+   This will:
+
+    - Start a PostgreSQL database in Docker (on your host at port 5433 to avoid conflicts).
+    - Build your Node app image.
+    - Run Prisma migrations and the seed script automatically.
+    - Start your app on port 3000.
+
+2. **Access the Application**
+
+   Open your browser and navigate to: [http://localhost:3000](http://localhost:3000)
+
+3. **Shut Down**
+
+   Press `Ctrl+C` in the terminal running Docker Compose to stop.
+   To remove containers and volumes, run:
+
+   ```bash
+   docker-compose down -v
+   ```
+
+### Additional Notes
+
+- You can use tools like `psql` or DBeaver to connect to the running Postgres at `localhost:5433` from your host machine.
+- Prisma migrations and seed scripts run automatically every time `docker-compose up` starts.
+- Use `.env` for local development with your own Postgres, and `.env.docker` when running with Docker Compose.
