@@ -29,13 +29,13 @@ exports.updateTaskStatus = async (req, res) => {
 exports.createTask = async (req, res) => {
     // employer only
     const {title, description, dueDate, assigneeId} = req.body;
-    const user = await prisma.user.findUnique({where: {id: assigneeId}});
+    const user = await prisma.user.findUnique({where: {id: parseInt(assigneeId)}});
     if (!user || user.role !== 'EMPLOYEE')
         return res.status(400).json({message: 'Assignee must be employee'});
     const task = await prisma.task.create({
         data: {
             title, description, dueDate: new Date(dueDate),
-            assigneeId
+            assigneeId: parseInt(assigneeId)
         }
     });
     res.status(201).json(task);

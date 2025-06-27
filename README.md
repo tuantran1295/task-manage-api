@@ -190,20 +190,64 @@ Status can be `"IN_PROGRESS"` or `"COMPLETED"`
 
 ---
 
-## Web UI (Employers Only)
+Sure! Here is an updated **Web UI** section for your README.md that explains how the EJS-based Web UI interacts with your backend API, how to use it, and the supported role-based flows:
 
-Employers can view/filter/sort all tasks through a simple web interface.
+---
 
-- **Visit:** [http://localhost:3000/tasks](http://localhost:3000/tasks)
-- You must be logged in as an Employer.
-- For development/testing, set your Bearer token in the browser using an extension like [ModHeader](https://modheader.com/).
+## Web UI
 
-### UI Features
+This project includes a simple EJS-powered Web frontend that communicates with the backend REST API through AJAX (using fetch). All authentication happens via JWT tokens stored in the browser's localStorage after login.
 
-- Table of all tasks
-- Filter by status (Pending, In Progress, Completed)
-- Sort by created date, due date, or status (ascending or descending)
-- View your login name, role, and email
+### Usage
+
+1. **Start the server:**
+
+   ```
+   npm start
+   ```
+
+2. **Access the app in your browser:**
+
+   ```
+   http://localhost:3000
+   ```
+
+3. **Pages**
+
+    - **Login:** `/login`
+    - **Register:** `/register`
+    - **Employee Dashboard:** `/employee-tasks`
+    - **Employer Task Dashboard:** `/tasks`
+    - **Create Task (Employer only):** `/tasks-create`
+    - **Employee Summary (Employer only):** `/employee-summary`
+
+### How it works
+
+- **Authentication:**  
+  Users log in or register; the JWT token received is stored in `localStorage`. All subsequent API calls from the Web UI use this token in the `Authorization` header.
+
+- **Role-based Redirection:**  
+  After login, the frontend fetches the current user info and redirects:
+    - *Employee* → `/employee-tasks`
+    - *Employer* → `/tasks`
+
+- **Employee**
+    - Sees a table of assigned tasks.
+    - Can update the status of each task (In Progress or Completed) directly from the table.
+
+- **Employer**
+    - Can view a table of all tasks with filtering (by assignee, status) and sorting.
+    - Can create and assign new tasks to employees.
+    - Can view a summary of each employee, including total and completed tasks.
+
+- **Logout:**  
+  Use the "Logout" link in the navigation bar, which clears localStorage and redirects to `/login`.
+
+### Technical Notes
+
+- The frontend has **no session**: all security is via JWTs (matching the API).
+- All web pages render in EJS (located in `src/views/`), but all business logic is performed via fetch/AJAX to `/api/*` endpoints.
+- If the JWT is invalid or missing, users are automatically redirected to `/login`.
 
 ---
 

@@ -63,7 +63,7 @@ async function main() {
             },
             {
                 title: 'Write API Docs',
-                description: 'Complete OpenAPI spec',
+                description: 'Complete API spec',
                 status: 'COMPLETED',
                 dueDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
                 assigneeId: employee2.id,

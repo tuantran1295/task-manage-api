@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const dotenv = require('dotenv');
+const os = require('os');
 dotenv.config();
 
 const apiRoutes = require('./routes');
@@ -36,6 +37,8 @@ app.use((req, res) => res.status(404).send('<h1>404 Not Found</h1><a href="/logi
 
 // Start server
 const PORT = process.env.PORT || 3000;
+const HOST = os.hostname();
 app.listen(PORT, () => {
     console.log('Server listening on port', PORT);
+    console.log(`Server is running at http://${HOST}:${PORT}`);
 });
