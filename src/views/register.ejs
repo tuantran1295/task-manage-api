@@ -3,33 +3,139 @@
 <head>
     <title>Register</title>
     <style>
-        body { font-family: Arial; margin: 2em; }
-        form { max-width: 350px; margin:auto; }
-        input, select { width:100%; padding:8px; margin-top:0.3em;}
-        button { margin-top:1em;}
-        .error { color: red; }
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f6f9fc;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .register-container {
+            width: 100%;
+            max-width: 350px;
+            padding: 2em 1.5em 1.5em 1.5em;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 14px rgba(0,0,0,0.07);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h2 {
+            margin-top: 0;
+            margin-bottom: 1.2em;
+            text-align: center;
+            color: #246;
+            font-weight: 700;
+            letter-spacing: .01em;
+        }
+        form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+        }
+        label {
+            color: #283048;
+            font-size: 1em;
+            font-weight: 500;
+            margin-bottom: .1em;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 0.3em;
+            border: 1px solid #e5e7eb;
+            border-radius: 5px;
+            background: #fafdff;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border: 1.5px solid #246;
+            background: #f2f8ff;
+        }
+        button {
+            margin-top: 0.6em;
+            padding: .85em 0;
+            background: #246;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.08em;
+            font-weight: 600;
+            letter-spacing: .01em;
+            cursor: pointer;
+            transition: background .18s;
+        }
+        button:hover {
+            background: #184073;
+        }
+        .error {
+            display: none;
+            width: 100%;
+            margin: 1em 0 0.7em 0;
+            color: #b91c1c;
+            background: #fdeaea;
+            border: 1px solid #facaca;
+            padding: 0.7em 1em;
+            border-radius: 4px;
+            font-size: 1em;
+            text-align: center;
+        }
+        .show { display: block; }
+        p {
+            color: #374151;
+            text-align: center;
+            margin-top: 1em;
+        }
+        a {
+            color: #246;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        a:hover {
+            color: #184073;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-<h2>Register</h2>
-<form id="register-form">
-    <label>Name: <input name="name" required /></label>
-    <label>Email: <input name="email" type="email" required /></label>
-    <label>Password: <input name="password" type="password" required /></label>
-    <label>Role:
-        <select name="role" required>
-            <option value="EMPLOYEE">Employee</option>
-            <option value="EMPLOYER">Employer</option>
-        </select>
-    </label>
-    <button type="submit">Register</button>
-</form>
-<div class="error" id="error"></div>
-<p>Already have an account? <a href="/login">Login</a></p>
+<div class="register-container">
+    <h2>Register</h2>
+    <form id="register-form" autocomplete="off">
+        <label>Name:
+            <input name="name" required />
+        </label>
+        <label>Email:
+            <input name="email" type="email" required />
+        </label>
+        <label>Password:
+            <input name="password" type="password" required />
+        </label>
+        <label>Role:
+            <select name="role" required>
+                <option value="EMPLOYEE">Employee</option>
+                <option value="EMPLOYER">Employer</option>
+            </select>
+        </label>
+        <button type="submit">Register</button>
+    </form>
+    <div class="error" id="error"></div>
+    <p>Already have an account? <a href="/login">Login</a></p>
+</div>
 <script>
     document.getElementById('register-form').onsubmit = async function(e) {
         e.preventDefault();
-        document.getElementById('error').textContent = "";
+        const errorDiv = document.getElementById('error');
+        errorDiv.textContent = "";
+        errorDiv.classList.remove('show');
         const form = e.target;
         const body = {
             name: form.name.value,
@@ -44,7 +150,8 @@
         if (res.ok) window.location = '/login';
         else {
             const err = await res.json();
-            document.getElementById('error').textContent = err.message || "Registration failed";
+            errorDiv.textContent = err.message || "Registration failed";
+            errorDiv.classList.add('show');
         }
     };
 </script>

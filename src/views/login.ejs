@@ -3,26 +3,130 @@
 <head>
     <title>Login</title>
     <style>
-        body { font-family: Arial; margin: 2em; }
-        form { max-width: 350px; margin:auto; }
-        input { width:100%; padding:8px; margin-top:0.3em;}
-        button { margin-top:1em;}
-        .error { color: red; }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f6f9fc;
+        }
+        .login-container {
+            width: 100%;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h2 {
+            margin-bottom: 1.5em;
+            font-weight: 700;
+            color: #246;
+            letter-spacing: 0.008em;
+        }
+        form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+        }
+        label {
+            font-size: 1em;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 0.7em;
+            font-size: 1em;
+            margin-top: 0.3em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: border 0.19s;
+            background: #fff;
+        }
+        input:focus {
+            outline: none;
+            border: 1.5px solid #246;
+        }
+        button {
+            margin-top: 0.7em;
+            padding: 0.75em 0;
+            background: #246;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.08em;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            cursor: pointer;
+            transition: background 0.18s;
+        }
+        button:hover {
+            background: #184073;
+        }
+        .error {
+            display: none;
+            width: 100%;
+            margin: 1em 0 0.7em 0;
+            color: #b91c1c;
+            background: #fdeaea;
+            border: 1px solid #facaca;
+            padding: 0.7em 1em;
+            border-radius: 4px;
+            font-size: 1em;
+            text-align: center;
+        }
+        .show {
+            display: block;
+        }
+        .register-link {
+            margin-top: 1.2em;
+            text-align: center;
+            color: #444;
+            font-size: 1em;
+        }
+        .register-link a {
+            color: #246;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .register-link a:hover {
+            color: #184073;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-<h2>Login</h2>
-<form id="login-form">
-    <label>Email: <input name="email" type="email" required /></label>
-    <label>Password: <input name="password" type="password" required /></label>
-    <button type="submit">Login</button>
-</form>
-<div class="error" id="error"></div>
-<p>Don't have an account? <a href="/register">Register</a></p>
+<div class="login-container">
+    <h2>Login</h2>
+    <form id="login-form" autocomplete="on">
+        <label>Email:
+            <input name="email" type="email" required autofocus />
+        </label>
+        <label>Password:
+            <input name="password" type="password" required autocomplete="current-password"/>
+        </label>
+        <button type="submit">Login</button>
+    </form>
+    <div class="error" id="error"></div>
+    <p class="register-link">Don't have an account? <a href="/register">Register</a></p>
+</div>
 <script>
     document.getElementById('login-form').onsubmit = async function(e) {
         e.preventDefault();
-        document.getElementById('error').textContent = "";
+        const errorDiv = document.getElementById('error');
+        errorDiv.textContent = "";
+        errorDiv.classList.remove("show");
         const form = e.target;
         const body = { email: form.email.value, password: form.password.value };
         const res = await fetch('/api/auth/login', {
@@ -41,7 +145,8 @@
             else window.location = '/tasks';
         } else {
             const err = await res.json();
-            document.getElementById('error').textContent = err.message || 'Login failed';
+            errorDiv.textContent = err.message || 'Login failed';
+            errorDiv.classList.add("show");
         }
     };
 </script>

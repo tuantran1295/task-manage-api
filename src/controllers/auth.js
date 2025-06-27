@@ -13,15 +13,18 @@ exports.login = async (req, res) => {
         return res.status(401).json({ message: 'Invalid email or password' });
     }
 
+    // Include email in the JWT
     const token = jwt.sign({
         id: user.id,
         role: user.role,
         name: user.name,
+        email: user.email // <--- Add email
     }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
     res.json({ token });
 
 }
+
 
 exports.register = async (req, res) => {
     const { name, email, password, role } = req.body;

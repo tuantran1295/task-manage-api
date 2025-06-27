@@ -3,34 +3,158 @@
 <head>
     <title>Employee Summary</title>
     <style>
-        body { font-family: Arial; margin: 2em; }
-        table { border-collapse: collapse; min-width: 700px;}
-        th, td { padding: 8px 12px; border: 1px solid #ccc;}
-        th { background: #efefef;}
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f6f9fc;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 950px;
+            margin: 2.5em auto 0 auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 14px rgba(0,0,0,0.07);
+            padding: 2.5em 2.5em 2em 2.5em;
+        }
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2em;
+            margin-bottom: 1.7em;
+            flex-wrap: wrap;
+        }
+        .header-title {
+            font-size: 2em;
+            color: #246;
+            font-weight: 700;
+            margin: 0;
+        }
+        nav {
+            display: flex;
+            gap: 1.5em;
+        }
+        nav a {
+            color: #246;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.07em;
+            transition: border-bottom .18s;
+            border-bottom: 2px solid transparent;
+            padding-bottom: 3px;
+        }
+        nav a:hover {
+            border-bottom: 2px solid #246;
+        }
+        #user-info {
+            color: #444;
+            font-size: 1em;
+            margin-bottom: 0.7em;
+            display: inline-block;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: #fff;
+            margin-top: 0.5em;
+            border-radius: 6px;
+            box-shadow: 0 1px 6px #f0f4fa;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 10px 12px;
+            border: 1px solid #ececec;
+            text-align: left;
+        }
+        th {
+            background: #f4f7fa;
+            font-weight: 600;
+            color: #223;
+        }
+        tr:nth-child(even) {
+            background: #f9fbfd;
+        }
+        @media (max-width: 1100px) {
+            .container { max-width: 99vw; padding: 1em;}
+        }
+        @media (max-width: 700px) {
+            .header-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: .5em;
+            }
+            .header-title { font-size: 1.4em; }
+            nav { gap: 1em; }
+            table { font-size: 0.98em; }
+        }
+        @media (max-width: 600px) {
+            .container { padding: .2em; }
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            thead { display: none; }
+            tr {
+                margin-bottom: 1em;
+                border: 1px solid #ececec;
+                border-radius: 6px;
+                box-shadow: 0 1px 6px #f0f4fa;
+                background: #fff;
+                padding: 6px 0;
+            }
+            td {
+                border: none;
+                position: relative;
+                padding-left: 48%;
+                min-height: 32px;
+            }
+            td:before {
+                position: absolute;
+                left: 12px;
+                top: 10px;
+                width: 46%;
+                white-space: nowrap;
+                font-weight: bold;
+                color: #888;
+            }
+            td:nth-child(1):before { content: "Name"; }
+            td:nth-child(2):before { content: "Email"; }
+            td:nth-child(3):before { content: "Total Tasks"; }
+            td:nth-child(4):before { content: "Completed Tasks"; }
+        }
     </style>
 </head>
 <body>
-<div>
+<div class="container">
     <span id="user-info"></span>
-    <nav style="float:right;">
-        <a href="/tasks">All Tasks</a>
-        <a href="/tasks-create">Create Task</a>
-        <a href="/employee-summary">Employee Summary</a>
-        <a href="/login" onclick="logout();return false;">Logout</a>
-    </nav>
+    <div class="header-bar">
+        <div class="header-title">Employee Task Summary</div>
+        <nav>
+            <a href="/tasks">All Tasks</a>
+            <a href="/tasks-create">Create Task</a>
+            <a href="/employee-summary">Employee Summary</a>
+            <a href="/login" onclick="logout();return false;">Logout</a>
+        </nav>
+    </div>
+    <table id="summary-table">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Total Tasks</th>
+            <th>Completed Tasks</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 </div>
-<h2>Employee Task Summary</h2>
-<table id="summary-table">
-    <thead><tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Total Tasks</th>
-        <th>Completed Tasks</th>
-    </tr></thead>
-    <tbody></tbody>
-</table>
 <script>
-    function logout() { localStorage.removeItem('token'); window.location = '/login'; }
+    function logout() {
+        localStorage.removeItem('token'); window.location = '/login';
+    }
     async function getTokenUser() {
         const token = localStorage.getItem('token');
         if (!token) return window.location = '/login';
@@ -46,15 +170,16 @@
     }
     async function load() {
         const user = await getTokenUser();
-        document.getElementById('user-info').textContent = user.name + " (" + user.email + ") - Employer";
+        document.getElementById('user-info').textContent =
+            user.name + (user.email ? ` (${user.email})` : "") + " - Employer";
         const summary = await fetchSummary();
         const tbody = document.querySelector('#summary-table tbody');
         tbody.innerHTML = summary.map(e => `<tr>
-    <td>${e.name}</td>
-    <td>${e.email}</td>
-    <td>${e.totalTasks}</td>
-    <td>${e.completedTasks}</td>
-  </tr>`).join("");
+            <td>${e.name}</td>
+            <td>${e.email}</td>
+            <td>${e.totalTasks}</td>
+            <td>${e.completedTasks}</td>
+        </tr>`).join("");
     }
     load();
 </script>

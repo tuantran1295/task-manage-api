@@ -188,11 +188,6 @@ Status can be `"IN_PROGRESS"` or `"COMPLETED"`
 ]
 ```
 
----
-
-Sure! Here is an updated **Web UI** section for your README.md that explains how the EJS-based Web UI interacts with your backend API, how to use it, and the supported role-based flows:
-
----
 
 ## Web UI
 
@@ -248,6 +243,54 @@ This project includes a simple EJS-powered Web frontend that communicates with t
 - The frontend has **no session**: all security is via JWTs (matching the API).
 - All web pages render in EJS (located in `src/views/`), but all business logic is performed via fetch/AJAX to `/api/*` endpoints.
 - If the JWT is invalid or missing, users are automatically redirected to `/login`.
+
+---
+
+Here’s how you might update your README.md file to document your frontend and backend validation changes in a Validation section:
+
+---
+
+## Validation
+
+To ensure only valid data can be submitted for new tasks, we’ve implemented the following validation checks both in the frontend and backend:
+
+#### Frontend Validation (tasks-create.ejs)
+- **Title and Description**: Users must enter non-empty values.
+- **Due date**: The due date field cannot be empty and must be a valid date/time (checked by creating a JavaScript `Date` object and validating it is not `NaN`).
+- **Assignee selection**: A task cannot be created without selecting a user for assignment.
+- **Immediate feedback**: If any field fails validation, an error message is shown on the form and the API request is not sent.
+
+#### Backend Validation (`src/controllers/tasks.js`)
+- **Title and Description**: Requests without a present and non-blank `title` or `description` are rejected with a 400 error and a descriptive message.
+- **Due date**: The backend validates that a value is provided for `dueDate`, and that it parses into a valid `Date` object. If the date is missing or invalid, the API returns a 400 error.
+- **Assignee**: The backend checks that the `assigneeId` represents a real EMPLOYEE user. Creation fails if this isn’t true.
+- **Sanitization**: Extra checks are present in the backend to ensure that valid inputs are stored, including trimming whitespace.
+
+#### Error Handling
+- If invalid data is submitted, the backend always responds with a 400 error and a descriptive message about what is wrong (e.g., “Due date is invalid” or “Assignee must be employee”), ensuring clear feedback to users and API clients.
+
+---
+
+## Example Error Responses
+
+- When the form is missing a due date:
+  ```
+  {
+    "message": "Due date is required."
+  }
+  ```
+- When the due date is not valid:
+  ```
+  {
+    "message": "Due date is invalid."
+  }
+  ```
+- If an assignee is not selected or not an EMPLOYEE:
+  ```
+  {
+    "message": "Assignee must be employee"
+  }
+  ```
 
 ---
 

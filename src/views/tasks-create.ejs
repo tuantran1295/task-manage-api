@@ -3,38 +3,159 @@
 <head>
     <title>Create Task</title>
     <style>
-        body { font-family: Arial; margin: 2em; }
-        form { max-width: 500px; }
-        label { display: block; margin-top: 1em; }
-        input, textarea, select { width: 100%; padding: 8px; margin-top: 0.3em; }
-        .error { color: red; }
-        .success { color: green; }
-        nav a { margin:0 1em 0 0; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f7fafc;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 630px;
+            margin: 3.5em auto 0 auto;
+            padding: 2em 2em 2.5em 2em;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+        }
+        .header-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1em;
+        }
+        nav {
+            display: flex;
+            gap: 1.3em;
+        }
+        nav a {
+            color: #246;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.07em;
+            transition: border-bottom .18s;
+            border-bottom: 2px solid transparent;
+            padding-bottom: 2px;
+        }
+        nav a:hover {
+            border-bottom: 2px solid #246;
+        }
+        h2 {
+            margin: 0;
+            color: #245;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-align: left;
+            font-size: 2em;
+        }
+        form {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+        }
+        label {
+            font-size: 1em;
+            font-weight: 500;
+            color: #374151;
+            margin-top: .3em;
+            margin-bottom: .1em;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: .3em;
+            border: 1px solid #e5e7eb;
+            border-radius: 5px;
+            font-size: 1em;
+            background: #fafdff;
+            resize: vertical;
+            min-height: 2.2em;
+            box-sizing: border-box;
+        }
+        textarea {
+            min-height: 80px;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border: 1.5px solid #246;
+            background: #f2f8ff;
+        }
+        button {
+            margin-top: 1.2em;
+            padding: 1.1em 0;
+            background: #246;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.15em;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            cursor: pointer;
+            transition: background .18s;
+        }
+        button:hover {
+            background: #184073;
+        }
+        .error, .success {
+            margin-top: 1.2em;
+            font-weight: 500;
+            text-align: center;
+            display: none;
+            border-radius: 4px;
+            padding: 0.7em 1em;
+        }
+        .error {
+            color: #b91c1c;
+            background: #fdeaea;
+            border: 1px solid #facaca;
+        }
+        .success {
+            color: #176e3e;
+            background: #e7f9ed;
+            border: 1px solid #a7e7c3;
+        }
+        .show { display: block; }
+        @media (max-width: 700px) {
+            .container { padding: 1em; }
+            .header-bar { flex-direction: column; align-items: flex-start; gap: 1.3em; }
+            h2 { text-align: left; }
+            nav { gap: 1em; }
+        }
     </style>
 </head>
 <body>
-<div>
-    <nav style="float:right;">
-        <a href="/tasks">All Tasks</a>
-        <a href="/tasks-create">Create Task</a>
-        <a href="/employee-summary">Employee Summary</a>
-        <a href="/login" onclick="logout();return false;">Logout</a>
-    </nav>
+<div class="container">
+    <div class="header-bar">
+        <nav>
+            <a href="/tasks">All Tasks</a>
+            <a href="/tasks-create">Create Task</a>
+            <a href="/employee-summary">Employee Summary</a>
+            <a href="/login" onclick="logout();return false;">Logout</a>
+        </nav>
+    </div>
+    <div class="header-bar">
+        <h2>Create Task</h2>
+    </div>
+    <form id="task-form" autocomplete="off">
+        <label>Title:
+            <input type="text" name="title" required />
+        </label>
+        <label>Description:
+            <textarea name="description" required></textarea>
+        </label>
+        <label>Due Date:
+            <input type="datetime-local" name="dueDate" required />
+        </label>
+        <label>Assignee:
+            <select name="assigneeId" id="assignee-select" required>
+                <option value="">Select Employee...</option>
+            </select>
+        </label>
+        <button type="submit">Create Task</button>
+    </form>
+    <div class="error" id="error"></div>
+    <div class="success" id="success"></div>
 </div>
-<h2>Create Task</h2>
-<form id="task-form">
-    <label>Title: <input type="text" name="title" required /></label>
-    <label>Description: <textarea name="description" required></textarea></label>
-    <label>Due Date: <input type="datetime-local" name="dueDate" required /></label>
-    <label>Assignee:
-        <select name="assigneeId" id="assignee-select" required>
-            <option value="">Select Employee...</option>
-        </select>
-    </label>
-    <button type="submit">Create Task</button>
-</form>
-<div class="error" id="error"></div>
-<div class="success" id="success"></div>
 <script>
     function logout() { localStorage.removeItem('token'); window.location = '/login'; }
 
@@ -68,8 +189,12 @@
 
     document.getElementById('task-form').onsubmit = async function(e) {
         e.preventDefault();
-        document.getElementById('error').textContent = "";
-        document.getElementById('success').textContent = "";
+        const errorDiv = document.getElementById('error');
+        const successDiv = document.getElementById('success');
+        errorDiv.textContent = "";
+        successDiv.textContent = "";
+        errorDiv.classList.remove('show');
+        successDiv.classList.remove('show');
 
         const form = e.target;
         const title = form.title.value.trim();
@@ -79,32 +204,36 @@
 
         // Frontend validation
         if (!title) {
-            document.getElementById('error').textContent = "Title is required.";
+            errorDiv.textContent = "Title is required.";
+            errorDiv.classList.add('show');
             return;
         }
         if (!description) {
-            document.getElementById('error').textContent = "Description is required.";
+            errorDiv.textContent = "Description is required.";
+            errorDiv.classList.add('show');
             return;
         }
         if (!dueDateString) {
-            document.getElementById('error').textContent = "Due date is required.";
+            errorDiv.textContent = "Due date is required.";
+            errorDiv.classList.add('show');
             return;
         }
-        // Validate date
         const dueDate = new Date(dueDateString);
         if (isNaN(dueDate.getTime())) {
-            document.getElementById('error').textContent = "Invalid due date format.";
+            errorDiv.textContent = "Invalid due date format.";
+            errorDiv.classList.add('show');
             return;
         }
         if (!assigneeId) {
-            document.getElementById('error').textContent = "Please select an assignee.";
+            errorDiv.textContent = "Please select an assignee.";
+            errorDiv.classList.add('show');
             return;
         }
 
         const body = {
             title,
             description,
-            dueDate: dueDate.toISOString(), // Always send in ISO format
+            dueDate: dueDate.toISOString(),
             assigneeId
         };
 
@@ -117,11 +246,13 @@
             body: JSON.stringify(body)
         });
         if (res.ok) {
-            document.getElementById('success').textContent = 'Task created! Redirecting...';
-            setTimeout(() => window.location = '/tasks', 800);
+            successDiv.textContent = 'Task created! Redirecting...';
+            successDiv.classList.add('show');
+            setTimeout(() => window.location = '/tasks', 900);
         } else {
             const err = await res.json();
-            document.getElementById('error').textContent = err.message || 'Failed to create task';
+            errorDiv.textContent = err.message || 'Failed to create task';
+            errorDiv.classList.add('show');
         }
     };
 

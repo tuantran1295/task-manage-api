@@ -3,61 +3,136 @@
 <head>
     <title>All Tasks</title>
     <style>
-        body { font-family: Arial; margin: 2em; }
-        table { border-collapse: collapse; min-width: 1100px;}
-        th, td { padding: 8px 12px; border: 1px solid #ccc;}
-        th { background: #efefef;}
-        select, button { padding:4px 8px;}
-        nav a { margin:0 1em 0 0; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 2em 0;
+            background: #f6f9fc;
+        }
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
+        nav {
+            float: right;
+        }
+        nav a {
+            margin: 0 1em 0 0;
+            color: #246;
+            text-decoration: none;
+            font-weight: 500;
+            padding-bottom: 2px;
+            border-bottom: 2px solid transparent;
+            transition: border-bottom 0.2s;
+        }
+        nav a:hover {
+            border-bottom: 2px solid #246;
+        }
+        #user-info {
+            font-size: 1em;
+            color: #555;
+        }
+        h2 {
+            text-align: left;
+            font-weight: 700;
+            color: #246;
+            margin-top: 2em;
+        }
+        form {
+            margin: 2em 0 1em 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1em;
+            align-items: center;
+        }
+        select, button {
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+            background: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: #fff;
+            box-shadow: 0 2px 12px #eee;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 10px 12px;
+            border: 1px solid #ececec;
+            text-align: left;
+        }
+        th {
+            background: #f4f7fa;
+            font-weight: 600;
+            color: #223;
+        }
+        tr:nth-child(even) {
+            background: #fafcff;
+        }
+        @media (max-width: 860px) {
+            table, .container { min-width: 0; width: 100%; }
+            table { font-size: 0.98em; }
+            form { flex-direction: column; gap: 0.7em; }
+        }
     </style>
 </head>
 <body>
-<div>
-    <span id="user-info"></span>
-    <nav style="float:right;">
-        <a href="/tasks">All Tasks</a>
-        <a href="/tasks-create">Create Task</a>
-        <a href="/employee-summary">Employee Summary</a>
-        <a href="/login" onclick="logout();return false;">Logout</a>
-    </nav>
+<div class="container">
+    <div style="overflow: hidden;">
+        <span id="user-info"></span>
+        <nav>
+            <a href="/tasks">All Tasks</a>
+            <a href="/tasks-create">Create Task</a>
+            <a href="/employee-summary">Employee Summary</a>
+            <a href="/login" onclick="logout();return false;">Logout</a>
+        </nav>
+    </div>
+    <h2>All Tasks</h2>
+    <form id="filter-form" autocomplete="off">
+        Assignee:
+        <select name="assigneeId" id="assigneeIdFilter"></select>
+        Status:
+        <select name="status" id="statusFilter">
+            <option value="">All</option>
+            <option value="PENDING">Pending</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="COMPLETED">Completed</option>
+        </select>
+        Sort by:
+        <select name="sortBy" id="sortByFilter">
+            <option value="createdAt">Created At</option>
+            <option value="dueDate">Due Date</option>
+            <option value="status">Status</option>
+        </select>
+        <select name="order" id="orderFilter">
+            <option value="desc">Descending</option>
+            <option value="asc">Ascending</option>
+        </select>
+        <button type="button" id="resetFilters">Reset</button>
+    </form>
+    <table id="tasks-table">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Due Date</th>
+            <th>Created At</th>
+            <th>Assignee</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 </div>
-<h2>All Tasks</h2>
-<form id="filter-form">
-    Assignee:
-    <select name="assigneeId" id="assigneeIdFilter"></select>
-    Status:
-    <select name="status" id="statusFilter">
-        <option value="">All</option>
-        <option value="PENDING">Pending</option>
-        <option value="IN_PROGRESS">In Progress</option>
-        <option value="COMPLETED">Completed</option>
-    </select>
-    Sort by:
-    <select name="sortBy" id="sortByFilter">
-        <option value="createdAt">Created At</option>
-        <option value="dueDate">Due Date</option>
-        <option value="status">Status</option>
-    </select>
-    <select name="order" id="orderFilter">
-        <option value="desc">Descending</option>
-        <option value="asc">Ascending</option>
-    </select>
-    <button type="button" id="resetFilters">Reset</button>
-</form>
-<table id="tasks-table">
-    <thead><tr>
-        <th>Title</th>
-        <th>Description</th>
-        <th>Status</th>
-        <th>Due Date</th>
-        <th>Created At</th>
-        <th>Assignee</th>
-        <th>Update Status</th>
-    </tr></thead>
-    <tbody></tbody>
-</table>
 <script>
-    function logout() { localStorage.removeItem('token'); window.location = '/login'; }
+    function logout() {
+        localStorage.removeItem('token');
+        window.location = '/login';
+    }
 
     async function getTokenUser() {
         const token = localStorage.getItem('token');
@@ -96,7 +171,8 @@
 
         // Get user and employees
         const user = await getTokenUser();
-        document.getElementById('user-info').textContent = user.name + " (" + user.email + ") - Employer";
+        document.getElementById('user-info').textContent =
+            user.name + (user.email ? ` (${user.email})` : "") + " - Employer";
         const employees = await fetchEmployees();
 
         // Fill assignee filter
@@ -111,7 +187,7 @@
         document.getElementById('sortByFilter').value = params.sortBy;
         document.getElementById('orderFilter').value = params.order;
 
-        // Handle filter changes instantly
+        // Handle filter changes
         function onFilterChange() {
             const par = {
                 assigneeId: assSel.value,
@@ -119,17 +195,14 @@
                 sortBy: document.getElementById('sortByFilter').value,
                 order: document.getElementById('orderFilter').value
             };
-            // Remove blanks so URL is pretty
             Object.keys(par).forEach(k => { if (!par[k]) delete par[k]; });
             updateUrlParams(par);
-            load(); // reload the table
+            load();
         }
         assSel.onchange = onFilterChange;
         document.getElementById('statusFilter').onchange = onFilterChange;
         document.getElementById('sortByFilter').onchange = onFilterChange;
         document.getElementById('orderFilter').onchange = onFilterChange;
-
-        // Reset button: clear all filters and reload
         document.getElementById('resetFilters').onclick = () => {
             updateUrlParams({});
             load();
@@ -140,49 +213,15 @@
         const tbody = document.querySelector('#tasks-table tbody');
         tbody.innerHTML = '';
         tasks.forEach(task => {
-            const assignee = employees.find(a=>a.id===task.assigneeId);
-            // Status dropdown if I am the assignee, else just text
-            let statusCell, updateCell;
-            if (user.id === task.assigneeId) {
-                // Show dropdown to update status
-                statusCell = task.status;
-                updateCell = `
-        <select data-taskid="${task.id}">
-          <option value="PENDING" ${task.status === 'PENDING' ? 'selected' : ''}>Pending</option>
-          <option value="IN_PROGRESS" ${task.status === 'IN_PROGRESS' ? 'selected' : ''}>In Progress</option>
-          <option value="COMPLETED" ${task.status === 'COMPLETED' ? 'selected' : ''}>Completed</option>
-        </select>
-      `;
-            } else {
-                statusCell = task.status;
-                updateCell = '';
-            }
+            const assignee = employees.find(a => a.id === task.assigneeId);
             tbody.innerHTML += `<tr>
-      <td>${task.title}</td>
-      <td>${task.description}</td>
-      <td>${statusCell}</td>
-      <td>${new Date(task.dueDate).toLocaleString()}</td>
-      <td>${new Date(task.createdAt).toLocaleString()}</td>
-      <td>${assignee ? assignee.name : ""}</td>
-      <td>${updateCell}</td>
-    </tr>`;
-        });
-
-        // Add status update handlers for assigned tasks
-        tbody.querySelectorAll('select[data-taskid]').forEach(sel => {
-            sel.onchange = async function() {
-                const id = sel.getAttribute('data-taskid');
-                const val = sel.value;
-                await fetch('/api/tasks/' + id, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': 'Bearer ' + localStorage.getItem('token'),
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ status: val })
-                });
-                load();
-            };
+                <td>${task.title}</td>
+                <td>${task.description}</td>
+                <td>${task.status}</td>
+                <td>${new Date(task.dueDate).toLocaleString()}</td>
+                <td>${new Date(task.createdAt).toLocaleString()}</td>
+                <td>${assignee ? assignee.name : ""}</td>
+            </tr>`;
         });
     }
     load();
