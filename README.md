@@ -244,12 +244,6 @@ This project includes a simple EJS-powered Web frontend that communicates with t
 - All web pages render in EJS (located in `src/views/`), but all business logic is performed via fetch/AJAX to `/api/*` endpoints.
 - If the JWT is invalid or missing, users are automatically redirected to `/login`.
 
----
-
-Here’s how you might update your README.md file to document your frontend and backend validation changes in a Validation section:
-
----
-
 ## Validation
 
 To ensure only valid data can be submitted for new tasks, we’ve implemented the following validation checks both in the frontend and backend:

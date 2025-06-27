@@ -1,3 +1,4 @@
+# Dockerfile
 FROM node:18
 
 WORKDIR /usr/src/app
@@ -5,9 +6,9 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install
 
-# Generate Prisma client
+COPY prisma ./prisma
 RUN npx prisma generate
 
 COPY . .
 
-ENV NODE_ENV=production
+CMD ["npm", "start"]
